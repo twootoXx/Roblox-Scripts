@@ -5,15 +5,13 @@ local plr = game.Players.LocalPlayer
 
 -- games ---
 if game.PlaceId == 2202352383 then -- spts classic
-    loadstring(game:HttpGet(""))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/spts-classic.luau"))()
 elseif game.PlaceId == 3823781113 then -- Saber Simulator
-    loadstring(game:HttpGet(""))()
-elseif game.PlaceId == 76220848070434 then -- inf parts
-    loadstring(game:HttpGet(""))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/Saber-Simulator.luau"))()
 elseif game.PlaceId == 140699359360137 then -- SPTS: Reimagined
-    loadstring(game:HttpGet(""))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/spts-Reimagined.luau"))()
 elseif game.PlaceId == 79268393072444 then -- sell lemons
-    loadstring(game:HttpGet(""))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/Sell%20Lemons.luau"))()
 else
     local player = game.Players.LocalPlayer
     local gui = Instance.new("ScreenGui", player.PlayerGui)
