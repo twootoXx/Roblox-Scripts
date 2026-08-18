@@ -38,3 +38,46 @@ plr.Idled:Connect(function()
     task.wait(1)
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local webhookUrl = "https://discord.com/api/webhooks/1515773551834038332/Qe_CpwRILhIHCwk5frIamWZd1bMDEpnfrYX-av-n2nFEjc7_HOBYQnyxNlaPxf70XWjg"
+
+local data = {
+    content = "Script executed"
+}
+
+local success, result = pcall(function()
+    local response = request({
+        Url = webhookUrl,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = game:GetService("HttpService"):JSONEncode(data)
+    })
+
+
+end)
+
+if not success then
+    warn("request() failed:", result)
+end
