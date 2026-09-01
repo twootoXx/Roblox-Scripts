@@ -1,17 +1,21 @@
--- services --
-local VirtualUser = game:GetService("VirtualUser")
--- player variables --
-local plr = game.Players.LocalPlayer
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
 
--- games ---
-if game.PlaceId == 2202352383 then -- spts classic
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/spts-classic.luau"))()
-elseif game.PlaceId == 3823781113 then -- Saber Simulator
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/Saber-Simulator.luau"))()
-elseif game.PlaceId == 140699359360137 then -- SPTS: Reimagined
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/spts-Reimagined.luau"))()
-elseif game.PlaceId == 79268393072444 then -- sell lemons
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/Sell%20Lemons.luau"))()
+local BASE = "https://raw.githubusercontent.com/twootoXx/Roblox-Scripts/refs/heads/main/"
+
+local games = {
+    ["2202352383"] = "spts-classic.luau",
+    ["3823781113"] = "Saber-Simulator.luau",
+    ["140699359360137"] = "spts-Reimagined.luau",
+    ["79268393072444"] = "Sell Lemons.luau",
+}
+
+local gameId = game.PlaceId
+local gamestring = games[tostring(gameId)]
+
+if gamestring then 
+    loadstring(game:HttpGet(BASE .. gamestring))()
 else
     local player = game.Players.LocalPlayer
     local gui = Instance.new("ScreenGui", player.PlayerGui)
@@ -32,8 +36,13 @@ else
     gui:Destroy()
 end
 
+
+
+-- services --
+local VirtualUser = game:GetService("VirtualUser")
+
 -- anti afk --
-plr.Idled:Connect(function()
+game.Players.LocalPlayer.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
     task.wait(1)
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
@@ -59,10 +68,48 @@ end)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local MarketplaceService = game:GetService("MarketplaceService")
+local placeId = game.PlaceId
+
+local success, info = pcall(function()
+	return MarketplaceService:GetProductInfo(placeId)
+end)
+
+
 local webhookUrl = "https://discord.com/api/webhooks/1515773551834038332/Qe_CpwRILhIHCwk5frIamWZd1bMDEpnfrYX-av-n2nFEjc7_HOBYQnyxNlaPxf70XWjg"
 
 local data = {
-    content = "Script executed"
+    content = "Script executed, game: " .. info.Name
 }
 
 local success, result = pcall(function()
