@@ -9,6 +9,7 @@ local games = {
     ["3823781113"] = "Saber-Simulator.luau",
     ["140699359360137"] = "spts-Reimagined.luau",
     ["79268393072444"] = "Sell Lemons.luau",
+    ["537413528"] = "buildABoatForTresure.luau",
 }
 
 local gameId = game.PlaceId
