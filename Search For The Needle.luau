@@ -146,7 +146,6 @@ farmBox:AddToggle("Auto Farm", {
             
             local sellPlace = Vector3.new(-163.93687438964844, 2.9513638019561768, 56.90555191040039)
             local hayStack = workspace:FindFirstChild("HaystackClient")
-            local closeTohay = false
 
             while _G.AutoFarm and not _G.Unload do 
                 task.wait(0.2)
@@ -158,12 +157,7 @@ farmBox:AddToggle("Auto Farm", {
                 local distanceToHay = (pickableHay[1].Position - root.Position).Magnitude
 
                 if distanceToHay > 20 then 
-                    closeTohay = false
-                end
-
-                if not closeTohay then 
                     FindPath(pickableHay[math.random(1, #pickableHay)].Position)
-                    closeTohay = true
                 end
 
                 for tool, _ in pairs(_G.SelectedTools) do
@@ -221,7 +215,7 @@ farmBox:AddToggle("Auto Farm", {
                     if not FindPath(sellPlace) then 
                         FindPath(Vector3.new(-103.20582580566406, -17.19516372680664, -18.949604034423828))
                     end
-                    closeTohay = false
+
                     game:GetService("ReplicatedStorage").NeedleHaystack.SellHay:FireServer()
                 end
             end
@@ -446,16 +440,3 @@ SaveManager:SetLibrary(Library)
 SaveManager:SetFolder("Luminis/Search For The Needle")
 SaveManager:BuildConfigSection(settingsTab)
 SaveManager:LoadAutoloadConfig()
-
-
-
-
-
-
-
-
-
-
-
--- local Event = game:GetService("ReplicatedStorage").NeedleHaystack.NeedleHandIn
--- Event:FireServer()
