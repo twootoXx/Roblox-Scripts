@@ -11,6 +11,8 @@ local games = {
     ["79268393072444"] = "Sell Lemons.luau",
     ["537413528"] = "buildABoatForTresure.luau",
     ["77108422251420"] = "Search For The Needle.luau",
+    ["108628039999641"] = "Search For The Needle.luau",
+    ["83445806734780"] = "Search For The Needle.luau",
 }
 
 local gameId = game.PlaceId
