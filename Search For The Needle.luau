@@ -367,7 +367,7 @@ characterBox:AddToggle("WalkSpeedToggle", {
     Callback = function(Value)
         _G.WalkSpeedToggle = Value
 
-        if not _G.WalkSpeedToggle then return end
+        if not _G.WalkSpeedToggle then humanoid.WalkSpeed = 16; return end
         
         task.spawn(function()
             while task.wait() and _G.WalkSpeedToggle and not _G.Unload do 
