@@ -1,16 +1,35 @@
 -- HUD variables --
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/gen2"))()
+
+-- local Window = Rayfield:CreateWindow({
+--    Name = "Twooto hub | spts classic",
+--    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+--    LoadingTitle = "Welcome to twooto hub!",
+--    LoadingSubtitle = "by twooto",
+--    ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+--    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+--    DisableRayfieldPrompts = true,
+--    DisableBuildWarnings = true, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+--    configuration = {
+--         autoSave = true,      -- save on change
+--         autoLoad = true,      -- load on first open
+--         fileName = "spts classic",
+--         customFolder = "Luminis", -- optional
+--     },
+-- })
 
 local Window = Rayfield:CreateWindow({
-   Name = "Twooto hub | spts classic",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Welcome to twooto hub!",
-   LoadingSubtitle = "by twooto",
-   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
-   DisableRayfieldPrompts = true,
-   DisableBuildWarnings = true, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+    name = "Twooto hub | spts classic",
+    subtitle = "Rayfield Gen2",
+    sidebarLayout = true,
+    configuration = {
+        autoSave = true,      -- save on change
+        autoLoad = true,      -- load on first open
+        fileName = "spts classic",
+        customFolder = "Luminis", -- optional
+    },
 })
 
 -- player variables --
@@ -242,11 +261,17 @@ local webhook_delay_slider
 -- functions --
 -- call function to create a notification
 local function sendNotification(whatsRunning, Value)
-    Rayfield:Notify({
-        Title = whatsRunning .. " " .. (Value and "Enabled" or "Disabled"),
-        Content = whatsRunning .. " has been " .. (Value and "Enabled" or "Disabled"),
-        Duration = 10,
-        Image = 4483362458,
+    -- Rayfield:Notify({
+    --     Title = whatsRunning .. " " .. (Value and "Enabled" or "Disabled"),
+    --     Content = whatsRunning .. " has been " .. (Value and "Enabled" or "Disabled"),
+    --     Duration = 10,
+    --     Image = 4483362458,
+    -- })
+
+    Window:Notify({
+        title = whatsRunning .. " " .. (Value and "Enabled" or "Disabled"),
+        content = whatsRunning .. " has been " .. (Value and "Enabled" or "Disabled"),
+        duration = 10,
     })
 end
 
@@ -381,6 +406,7 @@ end
 local function ESP(status)
     -- sets the esp to true
     showESP = status
+    if not showESP then return end
     local players
 
     -- function that removes the esp of a player
@@ -587,6 +613,8 @@ end
 local function Bring_player(status)
     bring_player = status
 
+    if not bring_player then return end
+
     repeat
         -- print("inside bring player repeat")
         for _, player in pairs(players_list) do
@@ -684,7 +712,7 @@ local function enable_webhook(status)
                         ["value"] = "```👥 Players in Server: " .. playerCount .. " / " .. maxPlayers .. "\n🕒 Server Time: " .. os.date("%H:%M:%S") .. "```",
                         ["inline"] = false
                     },
-                    { ["name"] = "Fit Strength", ["value"] = "```" .. fs .." -> ".. string.match(infoframe.FSTxt.Text, "%d+%.?%d*%a*") .. "```", ["inline"] = true },
+                    { ["name"] = "Fist Strength", ["value"] = "```" .. fs .." -> ".. string.match(infoframe.FSTxt.Text, "%d+%.?%d*%a*") .. "```", ["inline"] = true },
                     { ["name"] = "Body Toughness", ["value"] = "```" .. bt .." -> ".. string.match(infoframe.BTTxt.Text, "%d+%.?%d*%a*") .. "```", ["inline"] = true },
                     { ["name"] = "Movement Speed", ["value"] = "```" .. ms .." -> ".. string.match(infoframe.MSTxt.Text, "%d+%.?%d*%a*") .. "```", ["inline"] = true },
                     { ["name"] = "Jump Power", ["value"] = "```" .. jp .." -> ".. string.match(infoframe.JFTxt.Text, "%d+%.?%d*%a*") .. "```", ["inline"] = true },
@@ -725,236 +753,496 @@ end
 
 -- GUI --
 -- creating farming tab
-farming_Tab = Window:CreateTab("Farms", "tractor")
+-- farming_Tab = Window:CreateTab("Farms", "tractor")
+farming_Tab = Window:CreateTab({ name = "Farms", icon = 93364949241311 })
 -- creating "safe farm section in farming_tab
-safe_farms_Section = farming_Tab:CreateSection("Safe Farms")
+-- safe_farms_Section = farming_Tab:CreateSection("Safe Farms")
+safe_farms_Section = farming_Tab:CreateSection({ name = "Safe Farms", icon = 93364949241311 })
 
-Farming_info_lable = farming_Tab:CreateLabel("Farms stats for you automaticaly, wont respawn when you die, if you want to respawn go to misc", "info")
+-- Farming_info_lable = farming_Tab:CreateLabel("Farms stats for you automaticaly, wont respawn when you die, if you want to respawn go to misc", "info")
+
+Farming_info_lable = farming_Tab:CreateText({
+    name = "Info",
+    text = "Farms stats for you automaticaly, wont respawn when you die, if you want to respawn go to misc",
+})
 
 -- farming toggles
+-- Fist_Farm_Toggle = farming_Tab:CreateToggle({
+--    Name = "Fist Farm",
+--    CurrentValue = false,
+--    Flag = "Fist_farm",
+--    Callback = function(Value)
+--         sendNotification("Fist Farm", Value)
+--         FarmStats(Value, "fist")
+--    end,
+-- })
+
 Fist_Farm_Toggle = farming_Tab:CreateToggle({
-   Name = "Fist Farm",
-   CurrentValue = false,
-   Flag = "Fist_farm",
-   Callback = function(Value)
-        sendNotification("Fist Farm", Value)
-        FarmStats(Value, "fist")
-   end,
+    name = "Fist Farm",
+    flag = "Fist_farm",
+    value = false,
+    callback = function(value)
+        sendNotification("Fist Farm", value)
+        FarmStats(value, "fist")
+    end,
 })
+
+-- Body_Farm_Toggle = farming_Tab:CreateToggle({
+--    Name = "Body Farm",
+--    CurrentValue = false,
+--    Flag = "Body_farm",
+--    Callback = function(Value)
+--         sendNotification("Body Farm", Value)
+--         FarmStats(Value, "body")
+--    end,
+-- })
 
 Body_Farm_Toggle = farming_Tab:CreateToggle({
-   Name = "Body Farm",
-   CurrentValue = false,
-   Flag = "Body_farm",
-   Callback = function(Value)
-        sendNotification("Body Farm", Value)
-        FarmStats(Value, "body")
-   end,
+    name = "Body Farm",
+    flag = "Body_farm",
+    value = false,
+    callback = function(value)
+        sendNotification("Body Farm", value)
+        FarmStats(value, "body")
+    end,
 })
+
+-- MovementSpeed_farm_toggle = farming_Tab:CreateToggle({
+--    Name = "MovementSpeed Farm",
+--    CurrentValue = false,
+--    Flag = "MovementSpeed_farm",
+--    Callback = function(Value)
+--         sendNotification("MovementSpeed Farm", Value)
+--         FarmStats(Value, "speed")
+--    end,
+-- })
 
 MovementSpeed_farm_toggle = farming_Tab:CreateToggle({
-   Name = "MovementSpeed Farm",
-   CurrentValue = false,
-   Flag = "MovementSpeed_farm",
-   Callback = function(Value)
-        sendNotification("MovementSpeed Farm", Value)
-        FarmStats(Value, "speed")
-   end,
+    name = "MovementSpeed Farm",
+    flag = "MovementSpeed_farm",
+    value = false,
+    callback = function(value)
+        sendNotification("MovementSpeed Farm", value)
+        FarmStats(value, "speed")
+    end,
 })
+
+-- JumpPower_farm_toggle = farming_Tab:CreateToggle({
+--    Name = "JumpPower Farm",
+--    CurrentValue = false,
+--    Flag = "JumpPower_farm",
+--    Callback = function(Value)
+--         sendNotification("JumpPower Farm", Value)
+--         FarmStats(Value, "jump")
+--    end,
+-- })
 
 JumpPower_farm_toggle = farming_Tab:CreateToggle({
-   Name = "JumpPower Farm",
-   CurrentValue = false,
-   Flag = "JumpPower_farm",
-   Callback = function(Value)
-        sendNotification("JumpPower Farm", Value)
-        FarmStats(Value, "jump")
-   end,
+    name = "JumpPower Farm",
+    flag = "JumpPower_farm",
+    value = false,
+    callback = function(value)
+        sendNotification("JumpPower Farm", value)
+        FarmStats(value, "jump")
+    end,
 })
+
+-- psychic_farm_toggle = farming_Tab:CreateToggle({
+--    Name = "psychic Farm",
+--    CurrentValue = false,
+--    Flag = "psychic_farm",
+--    Callback = function(Value)
+--         sendNotification("psychic Farm", Value)
+--         FarmStats(Value, "psychic")
+--    end,
+-- })
 
 psychic_farm_toggle = farming_Tab:CreateToggle({
-   Name = "psychic Farm",
-   CurrentValue = false,
-   Flag = "psychic_farm",
-   Callback = function(Value)
-        sendNotification("psychic Farm", Value)
-        FarmStats(Value, "psychic")
-   end,
+    name = "psychic Farm",
+    flag = "psychic_farm",
+    value = false,
+    callback = function(value)
+        sendNotification("psychic Farm", value)
+        FarmStats(value, "psychic")
+    end,
 })
 
-risky_farms_Section = farming_Tab:CreateSection("risky Farms ⚠️ (Ban risk)")
-Risky_Farming_info_lable = farming_Tab:CreateLabel("Teleports to a area thats too high for you so you will gain a lot of stats but its really obvious, use in private server", "info")
+-- risky_farms_Section = farming_Tab:CreateSection("risky Farms ⚠️ (Ban risk)")
+-- Risky_Farming_info_lable = farming_Tab:CreateLabel("Teleports to a area thats too high for you so you will gain a lot of stats but its really obvious, use in private server", "info")
+
+risky_farms_Section = farming_Tab:CreateSection({ name = "risky Farms ⚠️ (Ban risk)", icon = 93364949241311 })
+
+Risky_Farming_info_lable = farming_Tab:CreateText({
+    name = "",
+    text = "Teleports to a area thats too high for you so you will gain a lot of stats but its really obvious, use in private server",
+})
+
+-- body_death_farm_toggle = farming_Tab:CreateToggle({
+--    Name = "BT death Farm ⚠️ (Ban risk)",
+--    CurrentValue = false,
+--    Flag = "BT death_farm",
+--    Callback = function(Value)
+--         sendNotification("BT death Farm", Value)
+--         Fast_respawn_toggle:Set(Value)
+--         FarmStats(Value, "body_deathFarm")
+--    end,
+-- })
 
 body_death_farm_toggle = farming_Tab:CreateToggle({
-   Name = "BT death Farm ⚠️ (Ban risk)",
-   CurrentValue = false,
-   Flag = "BT death_farm",
-   Callback = function(Value)
-        sendNotification("BT death Farm", Value)
-        Fast_respawn_toggle:Set(Value)
-        FarmStats(Value, "body_deathFarm")
-   end,
+    name = "BT death Farm ⚠️ (Ban risk)",
+    flag = "BT death_farm",
+    value = false,
+    callback = function(value)
+        sendNotification("BT death Farm", value)
+        -- Fast_respawn_toggle:Set(value, true)
+        FarmStats(value, "body_deathFarm")
+    end,
 })
 
 -- creating combat tab
-combat_Tab = Window:CreateTab("Combat", "axe")
+-- combat_Tab = Window:CreateTab("Combat", "axe")
+combat_Tab = Window:CreateTab({ name = "Combat", icon = 93364949241311 })
 -- creating "safe farm section in farming_tab
-Safe_combat_Section = combat_Tab:CreateSection("Safe combat features")
-safe_combat_info_lable = combat_Tab:CreateLabel("Highlights all the players in the sever and draws a name box above their head", "info")
+-- Safe_combat_Section = combat_Tab:CreateSection("Safe combat features")
+-- safe_combat_info_lable = combat_Tab:CreateLabel("Highlights all the players in the sever and draws a name box above their head", "info")
+
+Safe_combat_Section = combat_Tab:CreateSection({ name = "Safe combat features", icon = 93364949241311 })
+
+safe_combat_info_lable = combat_Tab:CreateText({
+    name = "",
+    text = "Highlights all the players in the sever and draws a name box above their head",
+})
+
+-- ESP_toggle = combat_Tab:CreateToggle({
+--    Name = "ESP",
+--    CurrentValue = false,
+--    Flag = "ESP",
+--    Callback = function(Value)
+--         sendNotification("ESP", Value)
+--         ESP(Value)
+--    end,
+-- })
 
 ESP_toggle = combat_Tab:CreateToggle({
-   Name = "ESP",
-   CurrentValue = false,
-   Flag = "ESP",
-   Callback = function(Value)
-        sendNotification("ESP", Value)
-        ESP(Value)
-   end,
+    name = "ESP",
+    flag = "ESP",
+    value = false,
+    callback = function(value)
+        sendNotification("ESP", value)
+        ESP(value)
+    end,
 })
 
-Dangerous_combat_Section = combat_Tab:CreateSection("Dangerous combat features ⚠️ (Ban risk)")
-Dangerous_combat_info_lable = combat_Tab:CreateLabel("Brings players too ya so you can kill them, very risky since players will report you", "info")
+-- Dangerous_combat_Section = combat_Tab:CreateSection("Dangerous combat features ⚠️ (Ban risk)")
+-- Dangerous_combat_info_lable = combat_Tab:CreateLabel("Brings players too ya so you can kill them, very risky since players will report you", "info")
+
+Dangerous_combat_Section = combat_Tab:CreateSection({ name = "Dangerous combat features ⚠️ (Ban risk)", icon = 93364949241311 })
+
+Dangerous_combat_info_lable = combat_Tab:CreateText({
+    name = "",
+    text = "Brings players too ya so you can kill them, very risky since players will report you",
+})
+
+-- Bring_Player_toggle = combat_Tab:CreateToggle({
+--    Name = "Bring all Players ⚠️ (Ban risk)",
+--    CurrentValue = false,
+--    Callback = function(Value)
+--         sendNotification("Bring all Players", Value)
+--         add_players_to_list("all")
+--         Bring_player(Value)
+--    end,
+-- })
 
 Bring_Player_toggle = combat_Tab:CreateToggle({
-   Name = "Bring all Players ⚠️ (Ban risk)",
-   CurrentValue = false,
-   Callback = function(Value)
-        sendNotification("Bring all Players", Value)
+    name = "Bring all Players ⚠️ (Ban risk)",
+    value = false,
+    callback = function(value)
+        sendNotification("Bring all Players", value)
         add_players_to_list("all")
-        Bring_player(Value)
-   end,
+        Bring_player(value)
+    end,
 })
+
+-- Bring_selected_toggle = combat_Tab:CreateToggle({
+--    Name = "Bring selected Players ⚠️ (Ban risk)",
+--    CurrentValue = false,
+--    Callback = function(Value)
+--         sendNotification("Bring selected Players", Value)
+--         Bring_player(Value)
+--    end,
+-- })
 
 Bring_selected_toggle = combat_Tab:CreateToggle({
-   Name = "Bring selected Players ⚠️ (Ban risk)",
-   CurrentValue = false,
-   Callback = function(Value)
-        sendNotification("Bring selected Players", Value)
-        Bring_player(Value)
-   end,
+    name = "Bring selected Players ⚠️ (Ban risk)",
+    value = false,
+    callback = function(value)
+        sendNotification("Bring selected Players", value)
+        Bring_player(value)
+    end,
 })
+
+-- rank_select_Bring_Player_dropdown = combat_Tab:CreateDropdown({
+--     Name = "rank select Bring Players",
+--     Options = {"Innocent", "hero", "villan"},
+--     CurrentOption = {"None"},
+--     MultipleOptions = true,
+--     Callback = function(Value)
+--         sendNotification("rank select Bring Players", Value)
+--         add_players_to_list("rank select", Value)
+--    end,
+-- })
 
 rank_select_Bring_Player_dropdown = combat_Tab:CreateDropdown({
-    Name = "rank select Bring Players",
-    Options = {"Innocent", "hero", "villan"},
-    CurrentOption = {"None"},
-    MultipleOptions = true,
-    Callback = function(Value)
-        sendNotification("rank select Bring Players", Value)
-        add_players_to_list("rank select", Value)
-   end,
+    name = "rank select Bring Players",
+    multiSelect = true,
+    options = {"Innocent", "hero", "villan"},
+    value = { "None" },
+    callback = function(selected)
+        sendNotification("rank select Bring Players", selected)
+        add_players_to_list("rank select", selected)
+    end,
 })
+
+-- player_select_Bring_Player_dropdown = combat_Tab:CreateDropdown({
+--     Name = "player select Bring Players",
+--     Options = server_players,
+--     CurrentOption = {"None"},
+--     MultipleOptions = true,
+--     Callback = function(Value)
+--         sendNotification("player select Bring Players", Value)
+--         add_players_to_list("player select", Value)
+--    end,
+-- })
 
 player_select_Bring_Player_dropdown = combat_Tab:CreateDropdown({
-    Name = "player select Bring Players",
-    Options = server_players,
-    CurrentOption = {"None"},
-    MultipleOptions = true,
-    Callback = function(Value)
-        sendNotification("player select Bring Players", Value)
-        add_players_to_list("player select", Value)
-   end,
+    name = "player select Bring Players",
+    multiSelect = true,
+    options = server_players,
+    value = { "None" },
+    callback = function(selected)
+        sendNotification("player select Bring Players", selected)
+        add_players_to_list("player select", selected)
+    end,
 })
 
+-- refresh_players_Button = combat_Tab:CreateButton({
+--    Name = "refresh players",
+--    Callback = function()
+--         refresh_server_players()
+--    end,
+-- })
+
 refresh_players_Button = combat_Tab:CreateButton({
-   Name = "refresh players",
-   Callback = function()
+    name = "refresh players",
+    callback = function()
         refresh_server_players()
-   end,
+    end,
 })
 
 -- creating misc tab
-misc_Tab = Window:CreateTab("misc", "book")
+-- misc_Tab = Window:CreateTab("misc", "book")
 
-Farm_settings_Section = misc_Tab:CreateSection("Farm settings")
-Farm_settings_info_lable = misc_Tab:CreateLabel("Makes it so when you enable a auto farm it wont teleport you to the farming location", "info")
+misc_Tab = Window:CreateTab({ name = "misc", icon = 93364949241311 })
+
+-- Farm_settings_Section = misc_Tab:CreateSection("Farm settings")
+-- Farm_settings_info_lable = misc_Tab:CreateLabel("Makes it so when you enable a auto farm it wont teleport you to the farming location", "info")
+
+-- Allow_Teleports_toggle = misc_Tab:CreateToggle({
+--    Name = "Allow teleports",
+--    CurrentValue = true,
+--    Flag = "Allow Teleports toggle",
+--    Callback = function(Value)
+--         sendNotification("Teleports", Value)
+--         allow_Teleports = Value
+--    end,
+-- })
+
 Allow_Teleports_toggle = misc_Tab:CreateToggle({
-   Name = "Allow teleports",
-   CurrentValue = true,
-   Flag = "Allow Teleports toggle",
-   Callback = function(Value)
-        sendNotification("Teleports", Value)
-        allow_Teleports = Value
-   end,
+    name = "Allow teleports",
+    value = true,
+    flag = "Allow Teleports toggle",
+    callback = function(value)
+        sendNotification("Teleports", value)
+        allow_Teleports = value
+    end,
 })
 
-respawn_Section = misc_Tab:CreateSection("Fast respawn")
-Fast_respawn_info_lable = misc_Tab:CreateLabel("Makes it so you respawn a lot faster, risky when used wrong", "info")
+-- respawn_Section = misc_Tab:CreateSection("Fast respawn")
+-- Fast_respawn_info_lable = misc_Tab:CreateLabel("Makes it so you respawn a lot faster, risky when used wrong", "info")
+
+respawn_Section = misc_Tab:CreateSection({ name = "Fast respawn", icon = 93364949241311 })
+
+Fast_respawn_info_lable = misc_Tab:CreateText({
+    name = "",
+    text = "Makes it so you respawn a lot faster, risky when used wrong",
+})
+
+-- Fast_respawn_toggle = misc_Tab:CreateToggle({
+--    Name = "Fast respawn",
+--    CurrentValue = false,
+--    Flag = "Fast respawn toggle",
+--    Callback = function(Value)
+--         sendNotification("Fast respawn", Value)
+--         respawn = Value
+--    end,
+-- })
 
 Fast_respawn_toggle = misc_Tab:CreateToggle({
-   Name = "Fast respawn",
-   CurrentValue = false,
-   Flag = "Fast respawn toggle",
-   Callback = function(Value)
-        sendNotification("Fast respawn", Value)
-        respawn = Value
-   end,
+    name = "Fast respawn",
+    value = false,
+    flag = "Fast_respawn_toggle",
+    callback = function(value)
+        sendNotification("Fast respawn", value)
+        print("Repsanw", value)
+        respawn = value
+        print("Repsanw2", respawn)
+    end,
 })
+
+-- return_respawn_toggle = misc_Tab:CreateToggle({
+--     Name = "death return",
+--     CurrentValue = false,
+--     Flag = "death return toggle",
+--     Callback = function(Value)
+--         sendNotification("Fast respawn", Value)
+--         respawnreturn = Value
+--         respawn = Value
+--     end,
+-- })
 
 return_respawn_toggle = misc_Tab:CreateToggle({
-    Name = "death return",
-    CurrentValue = false,
-    Flag = "death return toggle",
-    Callback = function(Value)
-        sendNotification("Fast respawn", Value)
-        respawnreturn = Value
-        respawn = Value
+    name = "death return",
+    value = false,
+    flag = "death_return_toggle",
+    callback = function(value)
+        sendNotification("Fast respawn", value)
+        respawnreturn = value
     end,
 })
 
-RespawnRate_info_lable = misc_Tab:CreateLabel("Effects the respawnrate of all the auto farms and fast respawn + death return", "info")
+-- RespawnRate_info_lable = misc_Tab:CreateLabel("Effects the respawnrate of all the auto farms and fast respawn + death return", "info")
+
+RespawnRate_info_lable = misc_Tab:CreateText({
+    name = "",
+    text = "Effects the respawnrate of all the auto farms and fast respawn + death return",
+})
+
+-- RespawnRate_slider = misc_Tab:CreateSlider({
+--     Name = "RespawnRate",
+--     Range = {0, 120},
+--     Increment = 1,
+--     Suffix = "seconds",
+--     CurrentValue = 0,
+--     Flag = "RespawnRate_Slider",
+--     Callback = function(Value)
+--         RespawnRate = Value
+--         print(RespawnRate)
+--     end,
+-- })
+
 RespawnRate_slider = misc_Tab:CreateSlider({
-    Name = "RespawnRate",
-    Range = {0, 120},
-    Increment = 1,
-    Suffix = "seconds",
-    CurrentValue = 0,
-    Flag = "RespawnRate_Slider",
-    Callback = function(Value)
-        RespawnRate = Value
-        print(RespawnRate)
+    name = "RespawnRate",
+    range = {1, 120},
+    increment = 1,
+    value = 1,
+    suffix = "seconds",
+    flag = "RespawnRate_Slider",
+    callback = function(value)
+        RespawnRate = value
     end,
 })
 
-Safe_misc_Section = misc_Tab:CreateSection("QOL features (fully safe)")
+-- Safe_misc_Section = misc_Tab:CreateSection("QOL features (fully safe)")
+Safe_misc_Section = misc_Tab:CreateSection({ name = "QOL features (fully safe)", icon = 93364949241311 })
+
+-- Auto_equip_weight_toggle = misc_Tab:CreateToggle({
+--     Name = "Auto equip weight",
+--     CurrentValue = false,
+--     Flag = "weight toggle",
+--     Callback = function(Value)
+--         sendNotification("Auto equip weight", Value)
+--         Auto_equip_weight(Value)
+--     end,
+-- })
+
 Auto_equip_weight_toggle = misc_Tab:CreateToggle({
-    Name = "Auto equip weight",
-    CurrentValue = false,
-    Flag = "weight toggle",
-    Callback = function(Value)
-        sendNotification("Auto equip weight", Value)
-        Auto_equip_weight(Value)
+    name = "Auto equip weight",
+    value = false,
+    flag = "weight_toggle",
+    callback = function(value)
+        sendNotification("Auto equip weight", value)
+        Auto_equip_weight(value)
     end,
 })
+
+-- Select_weight_dropdown = misc_Tab:CreateDropdown({
+--     Name = "select weight",
+--     Options = {"100 LB", "1 Ton", "10 Ton", "100 Ton"},
+--     CurrentOption = {"None"},
+--     MultipleOptions = false,
+--     Flag = "weight dropdown",
+--     Callback = function(Value)
+--         selected_weight = Value[1]
+--    end,
+-- })
 
 Select_weight_dropdown = misc_Tab:CreateDropdown({
-    Name = "select weight",
-    Options = {"100 LB", "1 Ton", "10 Ton", "100 Ton"},
-    CurrentOption = {"None"},
-    MultipleOptions = false,
-    Flag = "weight dropdown",
-    Callback = function(Value)
-        selected_weight = Value[1]
-   end,
-})
-
-Auto_claim_quest_toggle = misc_Tab:CreateToggle({
-    Name = "Auto claim quest",
-    CurrentValue = false,
-    Flag = "Auto claim quest",
-    Callback = function(Value)
-        sendNotification("Auto claim quest", Value)
-        auto_claim_quest(Value)
+    name = "select weight",
+    multiSelect = false,
+    options = {"100 LB", "1 Ton", "10 Ton", "100 Ton"},
+    value = {"None"},
+    flag = "weight_dropdown",
+    callback = function(selected)
+        selected_weight = selected
     end,
 })
 
-local fpsMode_toggle = misc_Tab:CreateToggle({
-    Name = "Limit fps",
-    CurrentValue = false,
-    Flag = "FpsMode",
-    Callback = function(Value)
-        limitFps = Value 
+-- Auto_claim_quest_toggle = misc_Tab:CreateToggle({
+--     Name = "Auto claim quest",
+--     CurrentValue = false,
+--     Flag = "Auto claim quest",
+--     Callback = function(Value)
+--         sendNotification("Auto claim quest", Value)
+--         auto_claim_quest(Value)
+--     end,
+-- })
 
+Auto_claim_quest_toggle = misc_Tab:CreateToggle({
+    name = "Auto claim quest",
+    value = false,
+    flag = "Auto_claim_quest",
+    callback = function(value)
+        sendNotification("Auto claim quest", value)
+        auto_claim_quest(value)
+    end,
+})
+
+-- local fpsMode_toggle = misc_Tab:CreateToggle({
+--     Name = "Limit fps",
+--     CurrentValue = false,
+--     Flag = "FpsMode",
+--     Callback = function(Value)
+--         limitFps = Value 
+
+--         if limitFps then
+--             task.spawn(function()
+--                 while limitFps do 
+--                     task.wait()
+--                     setfpscap(10)
+--                 end
+--                 setfpscap(240)
+--             end)
+--         end
+--     end,
+-- })
+
+fpsMode_toggle = misc_Tab:CreateToggle({
+    name = "Limit fps",
+    value = false,
+    flag = "FpsMode",
+    callback = function(value)
+        limitFps = value 
+        
         if limitFps then
             task.spawn(function()
                 while limitFps do 
@@ -967,13 +1255,28 @@ local fpsMode_toggle = misc_Tab:CreateToggle({
     end,
 })
 
-local treeDrender_toggle = misc_Tab:CreateToggle({
-    Name = "3dRender",
-    CurrentValue = false,
-    Flag = "3dRender",
-    Callback = function(Value)
-        sendNotification("3dRender", Value)
-        if Value == true then
+-- local treeDrender_toggle = misc_Tab:CreateToggle({
+--     Name = "3dRender",
+--     CurrentValue = false,
+--     Flag = "3dRender",
+--     Callback = function(Value)
+--         sendNotification("3dRender", Value)
+--         if Value == true then
+--             game:GetService("RunService"):Set3dRenderingEnabled(false)
+--             return
+--         end
+
+--         game:GetService("RunService"):Set3dRenderingEnabled(true)
+--     end,
+-- })
+
+treeDrender_toggle = misc_Tab:CreateToggle({
+    name = "3dRender",
+    value = false,
+    flag = "3dRender",
+    callback = function(value)
+        sendNotification("3dRender", value)
+        if value == true then
             game:GetService("RunService"):Set3dRenderingEnabled(false)
             return
         end
@@ -982,123 +1285,162 @@ local treeDrender_toggle = misc_Tab:CreateToggle({
     end,
 })
 
--- creating fun tab
-Fun_Tab = Window:CreateTab("Fun", "book")
--- creating "safe farm section in farming_tab
-Fun_info_lable = Fun_Tab:CreateLabel("In this tab you can find some fun little toggles, these wont effect gameplay progression at all", "info")
+-- -- creating fun tab
+-- Fun_Tab = Window:CreateTab("Fun", "book")
+-- -- creating "safe farm section in farming_tab
+-- Fun_info_lable = Fun_Tab:CreateLabel("In this tab you can find some fun little toggles, these wont effect gameplay progression at all", "info")
 
-custom_name_toggle = Fun_Tab:CreateToggle({
-    Name = "Custom name",
-    CurrentValue = false,
-    Flag = "Custom name toggle",
-    Callback = function(Value)
-        sendNotification("Custom name", Value)
-        custom_name_running = Value
-        if Value then
-            rootpart:WaitForChild("SPTS_PN_BG").NameTxt.Text = CustomName
-        else
-            rootpart:WaitForChild("SPTS_PN_BG").NameTxt.Text = plr.Name
-        end
+-- custom_name_toggle = Fun_Tab:CreateToggle({
+--     Name = "Custom name",
+--     CurrentValue = false,
+--     Flag = "Custom name toggle",
+--     Callback = function(Value)
+--         sendNotification("Custom name", Value)
+--         custom_name_running = Value
+--         if Value then
+--             rootpart:WaitForChild("SPTS_PN_BG").NameTxt.Text = CustomName
+--         else
+--             rootpart:WaitForChild("SPTS_PN_BG").NameTxt.Text = plr.Name
+--         end
+--     end,
+-- })
+
+-- custom_name_input = Fun_Tab:CreateInput({
+--    Name = "Enter Name",
+--    CurrentValue = "discord.gg/WYwXgHtdZW",
+--    PlaceholderText = "discord.gg/WYwXgHtdZW",
+--    RemoveTextAfterFocusLost = false,
+--    Flag = "custom name",
+--    Callback = function(Text)
+--         CustomName = Text
+--    end,
+-- })
+
+-- Fun_Chat_info_lable = Fun_Tab:CreateLabel("These only show in chat, you are the only one seeing these, other players wont see the changes you make", "info")
+
+-- Make_mod_Toggle = Fun_Tab:CreateToggle({
+--    Name = "Make Mod",
+--    CurrentValue = false,
+--    Flag = "MOD",
+--    Callback = function(Value)
+--         plr:SetAttribute("IsModerator", Value)
+--    end,
+-- })
+
+-- Reputation_input = Fun_Tab:CreateInput({
+--    Name = "Enter Reputation",
+--    CurrentValue = "-100000",
+--    PlaceholderText = "100",
+--    RemoveTextAfterFocusLost = false,
+--    Flag = "custom reputation",
+--    Callback = function(Text)
+--         Text = tonumber(Text)
+--         if Text then
+--             plr:SetAttribute("Reputation", tonumber(Text))
+--         else
+--             warn("Invalid reputation value: " .. tostring(Text))
+--         end
+--    end,
+-- })
+
+-- Make_VIP_toggle = Fun_Tab:CreateToggle({
+--    Name = "Make VIP",
+--    CurrentValue = false,
+--    Flag = "VIP",
+--    Callback = function(Value)
+--         plr:SetAttribute("VIPTag", Value)
+--    end,
+-- })
+
+-- LB_input = Fun_Tab:CreateInput({
+--    Name = "Enter leaderboard position",
+--    CurrentValue = "1",
+--    PlaceholderText = "99",
+--    RemoveTextAfterFocusLost = false,
+--    Flag = "custom lb position",
+--    Callback = function(Text)
+--         Text = tonumber(Text)
+--         if Text then
+--             plr:SetAttribute("WorldRank", tonumber(Text))
+--         else
+--             warn("Invalid reputation value: " .. tostring(Text))
+--         end
+--    end,
+-- })
+
+-- webhooks tab --
+
+
+
+webhooks_tab = Window:CreateTab({ name = "Webhooks", icon = 93364949241311 })
+
+webhook_section = webhooks_tab:CreateSection({ name = "Webhooks", icon = 93364949241311 })
+
+-- webhooks_tab = Window:CreateTab("Webhooks", "webhook") 
+
+-- webhook_section = webhooks_tab:CreateSection("Webhooks")
+
+-- Webhook_input = webhooks_tab:CreateInput({
+--     Name = "Webhook URL",
+--     PlaceholderText = "Enter Webhook URL",
+--     RemoveTextAfterFocusLost = true,
+--     Flag = "webhook_url_input",  
+--     Callback = function(Value)
+--         webhook_url = Value
+--     end
+-- })
+
+Webhook_input = webhooks_tab:CreateInput({
+    name = "Webhook URL",
+    numeric = false,
+    value = "",
+    placeholder = "Enter Webhook URL",
+    flag = "webhook_url_input",
+    callback = function(text)
+        webhook_url = text
     end,
 })
 
-custom_name_input = Fun_Tab:CreateInput({
-   Name = "Enter Name",
-   CurrentValue = "discord.gg/WYwXgHtdZW",
-   PlaceholderText = "discord.gg/WYwXgHtdZW",
-   RemoveTextAfterFocusLost = false,
-   Flag = "custom name",
-   Callback = function(Text)
-        CustomName = Text
-   end,
-})
-
-Fun_Chat_info_lable = Fun_Tab:CreateLabel("These only show in chat, you are the only one seeing these, other players wont see the changes you make", "info")
-
-Make_mod_Toggle = Fun_Tab:CreateToggle({
-   Name = "Make Mod",
-   CurrentValue = false,
-   Flag = "MOD",
-   Callback = function(Value)
-        plr:SetAttribute("IsModerator", Value)
-   end,
-})
-
-Reputation_input = Fun_Tab:CreateInput({
-   Name = "Enter Reputation",
-   CurrentValue = "-100000",
-   PlaceholderText = "100",
-   RemoveTextAfterFocusLost = false,
-   Flag = "custom reputation",
-   Callback = function(Text)
-        Text = tonumber(Text)
-        if Text then
-            plr:SetAttribute("Reputation", tonumber(Text))
-        else
-            warn("Invalid reputation value: " .. tostring(Text))
-        end
-   end,
-})
-
-Make_VIP_toggle = Fun_Tab:CreateToggle({
-   Name = "Make VIP",
-   CurrentValue = false,
-   Flag = "VIP",
-   Callback = function(Value)
-        plr:SetAttribute("VIPTag", Value)
-   end,
-})
-
-LB_input = Fun_Tab:CreateInput({
-   Name = "Enter leaderboard position",
-   CurrentValue = "1",
-   PlaceholderText = "99",
-   RemoveTextAfterFocusLost = false,
-   Flag = "custom lb position",
-   Callback = function(Text)
-        Text = tonumber(Text)
-        if Text then
-            plr:SetAttribute("WorldRank", tonumber(Text))
-        else
-            warn("Invalid reputation value: " .. tostring(Text))
-        end
-   end,
-})
-
--- webhooks tab --
-webhooks_tab = Window:CreateTab("Webhooks", "webhook") 
-
-webhook_section = webhooks_tab:CreateSection("Webhooks")
-
-Webhook_input = webhooks_tab:CreateInput({
-    Name = "Webhook URL",
-    PlaceholderText = "Enter Webhook URL",
-    RemoveTextAfterFocusLost = true,
-    Flag = "webhook_url_input",  
-    Callback = function(Value)
-        webhook_url = Value
-    end
-})
+-- webhook_toggle = webhooks_tab:CreateToggle({
+--     Name = "Enable Webhook",
+--     CurrentValue = false,
+--     Flag = "Toggle_EnableWebhook",  
+--     Callback = function(Value)
+--         enable_webhook(Value)
+--     end
+-- })
 
 webhook_toggle = webhooks_tab:CreateToggle({
-    Name = "Enable Webhook",
-    CurrentValue = false,
-    Flag = "Toggle_EnableWebhook",  
-    Callback = function(Value)
-        enable_webhook(Value)
-    end
+    name = "Enable Webhook",
+    value = false,
+    flag = "Toggle_EnableWebhook",
+    callback = function(value)
+        enable_webhook(value)
+    end,
 })
 
+-- webhook_delay_slider = webhooks_tab:CreateSlider({
+--     Name = "Send delay webhook",
+--     Range = {1, 60},
+--     Increment = 1,
+--     Suffix = "min",
+--     CurrentValue = 1,
+--     Flag = "webhook_delay_slider",  
+--     Callback = function(Value)
+--         delay_webhook = Value * 60
+--     end
+-- })
+
 webhook_delay_slider = webhooks_tab:CreateSlider({
-    Name = "Send delay webhook",
-    Range = {1, 60},
-    Increment = 1,
-    Suffix = "min",
-    CurrentValue = 1,
-    Flag = "webhook_delay_slider",  
-    Callback = function(Value)
-        delay_webhook = Value * 60
-    end
+    name = "Send delay webhook",
+    range = {1, 60},
+    increment = 1,
+    value = 1,
+    suffix = "min",
+    flag = "webhook_delay_slider",
+    callback = function(value)
+        delay_webhook = value * 60
+    end,
 })
 
 -- connections --
@@ -1106,8 +1448,8 @@ webhook_delay_slider = webhooks_tab:CreateSlider({
 plr_died_conn = plr.Character.Humanoid.Died:Connect(function()
     print("script user died: " ..plr.Name .." is dead")
     before_death_location = rootpart.CFrame
-
-    if respawn then
+    print("DeathConnection", respawn)
+    if respawn or respawnreturn then
         fastrespawn()
     end
 end)
@@ -1136,8 +1478,8 @@ char_add_conn = plr.CharacterAdded:Connect(function(character)
     plr_died_conn = plr.Character.Humanoid.Died:Connect(function()
         print("script user died: " ..plr.Name .." is dead")
         before_death_location = rootpart.CFrame
-
-        if respawn then
+        print("DeathConnection", respawn)
+        if respawn or respawnreturn then
             fastrespawn()
         end
     end)

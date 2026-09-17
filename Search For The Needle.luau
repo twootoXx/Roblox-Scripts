@@ -126,7 +126,7 @@ end
 
 farmBox:AddDropdown("SelectedTools", {
     Values = {"Hand", "PitchFork", "TNT"},
-    Default = {"None"}, -- Default selected values for multi-select
+    Default = {"None"},
     Multi = true,
     Text = "Select tools",
     Callback = function(Values)
