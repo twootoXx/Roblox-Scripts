@@ -216,7 +216,7 @@ farmBox:AddToggle("Auto Farm", {
                 end
 
                 for tool, _ in pairs(_G.SelectedTools) do
-                    -- task.wait(0.1)
+                    task.wait(0.1)
                     if tool == "Hand" then 
                         local firstIndex = nil
                         local haytable = {}
