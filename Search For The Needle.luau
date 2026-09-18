@@ -217,6 +217,7 @@ farmBox:AddToggle("Auto Farm", {
 
                 for tool, _ in pairs(_G.SelectedTools) do
                     task.wait(0.1)
+                    pickableHay = hayStack:GetChildren()
                     if tool == "Hand" then 
                         local firstIndex = nil
                         local haytable = {}
