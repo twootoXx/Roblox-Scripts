@@ -6,6 +6,11 @@ if _G.Loaded then
     error("Script already ran")
 end
 
+local inLobby = false
+if game.PlaceId == 77108422251420 then 
+    inLobby = true
+end
+
 _G.Loaded = true
 _G.Unload = false
 
@@ -18,12 +23,17 @@ _G.SelectedTools = {}
 _G.SelectedBuyTools = {}
 _G.ToggleAutoTools = false
 _G.NeedleEsp = false
+_G.SelectedMap = {}
+_G.ToggleJoiner = false
+_G.SelectedDifficulty = {}
+_G.PartySize = 1
 
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
 local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 local PathfindingService = game:GetService("PathfindingService")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local plr = game.Players.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
@@ -41,6 +51,7 @@ local Window = Library:CreateWindow({
 
 local infoTab = Window:AddTab("Info", "info")
 local mainTab = Window:AddTab("Main", "house")
+local LobbyTab = Window:AddTab("Lobby", "house")
 local characterTab = Window:AddTab("Character", "house")
 local settingsTab = Window:AddTab("settings", "settings")
 
@@ -51,8 +62,14 @@ local upgradeBox = mainTab:AddRightGroupbox("Upgrades")
 local toolsBox = mainTab:AddLeftGroupbox("Tools")
 local characterBox = characterTab:AddLeftGroupbox("Character Modifiers")
 local scriptBox = settingsTab:AddLeftGroupbox("Script")
+local joinerBox = LobbyTab:AddLeftGroupbox("Joiner")
 
-discordBox:AddLabel("Support the script by joining the discord!")
+
+discordBox:AddLabel({
+    Text = "Support the script by joining the discord!",
+    DoesWrap = true
+})
+
 discordBox:AddButton({
     Text = "Discord Invite",
     Func = function()
@@ -76,49 +93,55 @@ scriptInfoBox:AddLabel({
     DoesWrap = true
 })
 
-local function FindPath(GoPlace)
+local function FindPath(goalPosition: Vector3): boolean
+    if not humanoid or not root then
+        return false
+    end
+
     local path = PathfindingService:CreatePath({
         AgentRadius = 3,
         AgentHeight = 6,
-        AgentCanJump = false,
+        AgentCanJump = true,
     })
 
-    local success, errorMessage = pcall(function()
-        path:ComputeAsync(root.Position, GoPlace)
+    local success, err = pcall(function()
+        path:ComputeAsync(root.Position, goalPosition)
     end)
 
-    if success and path.Status == Enum.PathStatus.Success then
-        for _, waypoint in path:GetWaypoints() do
-            humanoid:MoveTo(waypoint.Position)
-            
-            if waypoint.Action == Enum.PathWaypointAction.Jump then
-                humanoid.Jump = true
-            end
-            
-            
-            local reached = false
-            local connection
-            local timeout = 1 -- seconds
-            
-            connection = humanoid.MoveToFinished:Connect(function()
-                reached = true
-                connection:Disconnect()
-            end)
-            
-            local start = os.clock()
-            while not reached and (os.clock() - start) < timeout do
-                if not _G.AutoFarm or _G.Unload then
-                    connection:Disconnect()
-                    return false
-                end
-                task.wait()
-            end
-            
-            connection:Disconnect()
-        end
-    else
-        print(`Path unable to be computed, error: {errorMessage}`)
+    if not success or path.Status ~= Enum.PathStatus.Success then
+        warn("Path compute failed:", err or path.Status)
+        humanoid:MoveTo(root.Position + Vector3.new(3, 0, 3))
         return false
+    end
+
+    local waypoints = path:GetWaypoints()
+    for _, waypoint in ipairs(waypoints) do
+        if not _G.AutoFarm or _G.Unload then
+            return false
+        end
+
+        humanoid:MoveTo(waypoint.Position)
+
+        if waypoint.Action == Enum.PathWaypointAction.Jump then
+            humanoid.Jump = true
+        end
+
+        local reached = false
+        local conn = humanoid.MoveToFinished:Connect(function()
+            reached = true
+        end)
+
+        local start = os.clock()
+        local timeout = 2
+        while not reached and (os.clock() - start) < timeout do
+            if not _G.AutoFarm or _G.Unload then
+                conn:Disconnect()
+                return false
+            end
+            task.wait()
+        end
+
+        conn:Disconnect()
     end
 
     return true
@@ -135,24 +158,56 @@ farmBox:AddDropdown("SelectedTools", {
     end
 })
 
+local function GetCurrentHayAmount()
+	local gui = plr:FindFirstChild("PlayerGui")
+	if not gui then return 0 end
+
+	local txt = gui:FindFirstChild("HUD")
+		and gui.HUD:FindFirstChild("BottomLeft")
+		and gui.HUD.BottomLeft:FindFirstChild("Capacity")
+		and gui.HUD.BottomLeft.Capacity:FindFirstChild("CurrentAmount")
+
+	if txt and txt:IsA("TextLabel") then
+		return tonumber(txt.Text) or 0
+	end
+	return 0
+end
+
+farmBox:AddLabel({
+    Text = "I would suggest also enabeling noclip for the best experience",
+    DoesWrap = true
+})
+
 farmBox:AddToggle("Auto Farm", {
     Text = "Farm Hay",
     Default = false,
     Tooltip = "Walks to the haybail and collects hay",
     Callback = function(Value)
         _G.AutoFarm = Value
+        if inLobby then return end
+
+
+
 
         task.spawn(function()
-            
-            local sellPlace = Vector3.new(-163.93687438964844, 2.9513638019561768, 56.90555191040039)
+                    
+            local sellPlaceChapter1 = Vector3.new(-163.93687438964844, 2.9513638019561768, 56.90555191040039)
+            local sellPlaceChapter2 = Vector3.new(-103.20582580566406, -17.19516372680664, -18.949604034423828)
             local hayStack = workspace:FindFirstChild("HaystackClient")
+
+            local pickHayEvent = ReplicatedStorage.NeedleHaystack.PickHay
+            local pitchforkDigEvent = ReplicatedStorage.NeedleHaystack.PitchforkDig
+            local tntEvent = ReplicatedStorage.NeedleHaystack.TntAction
+            local sellHayEvent = ReplicatedStorage.NeedleHaystack.SellHay
 
             while _G.AutoFarm and not _G.Unload do 
                 task.wait(0.2)
+
+
                 local pickableHay = hayStack:GetChildren()
                 local backpackSize = plr:GetAttribute("HayCapacity")
                 local heyGrabCount = plr:GetAttribute("HayGrabCount")
-                local currentAmmount = tonumber(plr.PlayerGui.HUD.BottomLeft.Capacity.CurrentAmount.Text)
+                local currentAmmount = GetCurrentHayAmount()
 
                 local distanceToHay = (pickableHay[1].Position - root.Position).Magnitude
 
@@ -170,7 +225,7 @@ farmBox:AddToggle("Auto Farm", {
                             if index >= heyGrabCount then break end
                             local distance = (hay.Position - root.Position).Magnitude
         
-                            if distance > 10 then continue end
+                            if distance > 20 then continue end
         
                             if #haytable == 0 and not firstIndex then
                                 firstIndex = hay:GetAttribute("HayId")
@@ -181,8 +236,7 @@ farmBox:AddToggle("Auto Farm", {
                             index += 1
                         end
                     
-                        local Event = game:GetService("ReplicatedStorage").NeedleHaystack.PickHay
-                        Event:FireServer(
+                        pickHayEvent:FireServer(
                             firstIndex,
                             haytable
                         )
@@ -191,35 +245,41 @@ farmBox:AddToggle("Auto Farm", {
                         for i, hay in ipairs(pickableHay) do
                             local distance = (hay.Position - root.Position).Magnitude
         
-                            if distance > 10 then continue end
+                            if distance > 20 then continue end
         
                             hayId = hay:GetAttribute("HayId")
                             break
                         end
                         
-                        game:GetService("ReplicatedStorage").NeedleHaystack.PitchforkDig:FireServer(hayId)
+                        pitchforkDigEvent:FireServer(hayId)
                     elseif tool == "TNT" then
-                        local Event = game:GetService("ReplicatedStorage").NeedleHaystack.TntAction
+                        
 
-                        Event:FireServer("light")
-
-                        Event:FireServer(
+                        tntEvent:FireServer("light")
+                        task.wait(0.1)
+                        tntEvent:FireServer(
                             "throw",
                             root.CFrame,
-                            pickableHay[1].Position
+                            pickableHay[math.random(1, #pickableHay)].Position
                         )
                     end
                 end
 
                 if currentAmmount >= backpackSize then
-                    if not FindPath(sellPlace) then 
-                        FindPath(Vector3.new(-103.20582580566406, -17.19516372680664, -18.949604034423828))
+
+                    if game.PlaceId == 108628039999641 then 
+                        FindPath(sellPlaceChapter1)
+                    elseif game.PlaceId == 83445806734780 then
+                        FindPath(sellPlaceChapter2)
                     end
 
-                    game:GetService("ReplicatedStorage").NeedleHaystack.SellHay:FireServer()
+                    sellHayEvent:FireServer()
                 end
             end
         end)
+
+
+
     end
 })
 
@@ -229,7 +289,7 @@ farmBox:AddToggle("Auto Gems", {
     Tooltip = "fly through all the stages and collect gold",
     Callback = function(Value)
         _G.AutoGems = Value
-
+        if inLobby then return end
         task.spawn(function()
             local gemFolder = game.Workspace:FindFirstChild("GemsClient")
             while _G.AutoGems and not _G.Unload and task.wait(1) do 
@@ -256,8 +316,8 @@ farmBox:AddToggle("NeedleEsp", {
     Default = false,
     Tooltip = "esp for needle",
     Callback = function(Value)
-        -- workspace.NeedleObjectiveServer.Needle["SPLIT--EYE"]
         _G.NeedleEsp = Value
+        if inLobby then return end
         task.spawn(function()
             while _G.NeedleEsp and not _G.Unload and task.wait(1) do 
                 local objectives = workspace.NeedleObjectiveServer:GetChildren()
@@ -274,6 +334,11 @@ farmBox:AddToggle("NeedleEsp", {
         
                     local highlight = Instance.new("Highlight", item:FindFirstChildWhichIsA("Part"))
                     highlight.Name = "Esp"
+                    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                    highlight.FillTransparency = 0.6
+                    highlight.OutlineTransparency = 0
+                    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 end
             end
         end)
@@ -298,7 +363,7 @@ upgradeBox:AddToggle("ToggleAutoUpgrades", {
     Tooltip = "Auto buy selected upgrades",
     Callback = function(Value)
         _G.ToggleAutoUpgrades = Value
-
+        if inLobby then return end
         task.spawn(function()
             local Event = game:GetService("ReplicatedStorage").NeedleHaystack.BuyUpgrade
             while _G.ToggleAutoUpgrades and not _G.Unload and task.wait(1) do 
@@ -329,9 +394,9 @@ toolsBox:AddToggle("ToggleAutoTools", {
     Tooltip = "Auto buy selected tools",
     Callback = function(Value)
         _G.ToggleAutoTools = Value
-
+        if inLobby then return end
         task.spawn(function()
-            local Event = game:GetService("ReplicatedStorage").NeedleHaystack.BuyShopItem
+            local Event = ReplicatedStorage.NeedleHaystack.BuyShopItem
             while _G.ToggleAutoTools and not _G.Unload and task.wait(5) do 
                 for upgradeName, _ in pairs(_G.SelectedBuyTools) do 
                     Event:FireServer(upgradeName)
@@ -340,6 +405,97 @@ toolsBox:AddToggle("ToggleAutoTools", {
         end)
     end
 })
+
+
+
+joinerBox:AddDropdown("SelectedMap", {
+    Values = {"FARMHOUSE", "BASEMENT"},
+    Default = {"None"},
+    Multi = false,
+    Text = "Select Map",
+    Callback = function(Values)
+        -- {value = true}
+        _G.SelectedMap = Values
+    end
+})
+
+joinerBox:AddDropdown("SelectedDifficulty", {
+    Values = {"NORMAL", "HARD"},
+    Default = {"None"},
+    Multi = false,
+    Text = "Select Difficulty",
+    Callback = function(Values)
+        -- {value = true}
+        _G.SelectedDifficulty = Values
+        
+    end
+})
+
+joinerBox:AddSlider("PartySize", {
+    Text = "Amount of player slots",
+    Default = 1,
+    Min = 1,
+    Max = 4,
+    Rounding = 1,
+    Compact = false,
+    Callback = function(Value)
+        _G.PartySize = Value
+    end
+})
+
+joinerBox:AddToggle("ToggleJoiner", {
+    Text = "Auto join map",
+    Default = false,
+    Tooltip = "Auto join the map when in the lobby",
+    Callback = function(Value)
+        _G.ToggleJoiner = Value
+        if not inLobby then return end
+        task.spawn(function()
+            local Event = game:GetService("ReplicatedStorage").Packages.Networker._remotes.PartyService.RemoteEvent
+
+            local teleporters = {}
+
+            for _, item in ipairs(game.Workspace:GetChildren()) do
+                if item.Name == "Teleporter" then 
+                    table.insert(teleporters, item)
+                end
+            end
+
+            while _G.ToggleJoiner and not _G.Unload and task.wait(5) and inLobby do 
+                local teleportCircle = nil
+                for _, item in pairs(teleporters) do  
+                    local collider = item:FindFirstChild("Collider")
+                    if not collider then continue end
+
+                    local billboard = collider:FindFirstChild("BillboardGui")
+                    if not billboard then continue end
+
+                    local CountLabel = billboard:FindFirstChild("CountLabel")
+                    if not CountLabel then continue end
+
+                    if string.sub(CountLabel.Text, 1, 1) == "0" then 
+                        teleportCircle = collider
+                    end
+                end
+
+                if not teleportCircle then continue end
+
+                root.Position = teleportCircle.Position
+
+                task.wait(0.5)
+
+                Event:FireServer(
+                    "CreateParty",
+                    _G.SelectedMap,
+                    _G.PartySize,
+                    _G.SelectedDifficulty
+                )
+
+            end
+        end)
+    end
+})
+
 
 
 characterBox:AddSlider("WalkSpeed", {
@@ -426,6 +582,10 @@ scriptBox:AddButton({
         _G.SelectedBuyTools = {}
         _G.ToggleAutoTools = false
         _G.NeedleEsp = false
+        _G.SelectedMap = {}
+        _G.ToggleJoiner = false
+        _G.SelectedDifficulty = {}
+        _G.PartySize = 1
 
         humanoid.WalkSpeed = 16
         noclipConn = nil
