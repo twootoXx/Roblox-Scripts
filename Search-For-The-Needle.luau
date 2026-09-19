@@ -194,6 +194,8 @@ farmBox:AddToggle("Auto Farm", {
             while _G.AutoFarm and not _G.Unload do 
                 task.wait()
 
+                if not root then continue end
+
                 if plr:GetAttribute("DroneOwned") and not firedDrone then 
                     ReplicatedStorage.NeedleHaystack.DeployDrone:FireServer()
                     firedDrone = true
@@ -625,6 +627,7 @@ joinerBox:AddToggle("ToggleJoiner", {
                 end
 
                 if not teleportCircle then continue end
+                if not root then continue end
 
                 root.Position = teleportCircle.Position
 
