@@ -1,3 +1,4 @@
+task.wait(1)
 while not game.Loaded do
     task.wait()
 end
@@ -271,6 +272,7 @@ farmBox:AddToggle("Auto Farm", {
 
                     elseif tool == "TNT" then
                         
+                        if not nearestHay then continue end
 
                         tntEvent:FireServer("light")
                         task.wait()
@@ -310,7 +312,8 @@ farmBox:AddToggle("Auto Gems", {
         if inLobby then return end
         task.spawn(function()
             local gemFolder = game.Workspace:FindFirstChild("GemsClient")
-            while _G.AutoGems and not _G.Unload and task.wait(1) do 
+            while _G.AutoGems and not _G.Unload and task.wait(1) do
+                if not gemFolder then continue end
                 local gems = gemFolder:GetChildren()
 
                 if #gems > 1 then 
