@@ -218,7 +218,9 @@ farmBox:AddToggle("Auto Farm", {
                     end
                 end
 
-                if nearestHayDistance > 5 and nearestHay ~= nil then
+                if not nearestHay then continue end
+
+                if nearestHayDistance > 5 then
                     FindPath(nearestHay.Position)
                 end
 
