@@ -27,6 +27,9 @@ _G.SelectedMap = {}
 _G.ToggleJoiner = false
 _G.SelectedDifficulty = {}
 _G.PartySize = 1
+_G.HayEsp = false
+_G.NeedleFound = false
+_G.AutoHandIn = false
 
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
@@ -60,6 +63,7 @@ local discordBox = infoTab:AddRightGroupbox("Discord")
 local farmBox = mainTab:AddLeftGroupbox("Farms")
 local upgradeBox = mainTab:AddRightGroupbox("Upgrades")
 local toolsBox = mainTab:AddLeftGroupbox("Tools")
+local espBox = mainTab:AddRightGroupbox("Esp")
 local characterBox = characterTab:AddLeftGroupbox("Character Modifiers")
 local scriptBox = settingsTab:AddLeftGroupbox("Script")
 local joinerBox = LobbyTab:AddLeftGroupbox("Joiner")
@@ -158,21 +162,6 @@ farmBox:AddDropdown("SelectedTools", {
     end
 })
 
-local function GetCurrentHayAmount()
-	local gui = plr:FindFirstChild("PlayerGui")
-	if not gui then return 0 end
-
-	local txt = gui:FindFirstChild("HUD")
-		and gui.HUD:FindFirstChild("BottomLeft")
-		and gui.HUD.BottomLeft:FindFirstChild("Capacity")
-		and gui.HUD.BottomLeft.Capacity:FindFirstChild("CurrentAmount")
-
-	if txt and txt:IsA("TextLabel") then
-		return tonumber(txt.Text) or 0
-	end
-	return 0
-end
-
 farmBox:AddLabel({
     Text = "I would suggest also enabeling noclip for the best experience",
     DoesWrap = true
@@ -200,40 +189,61 @@ farmBox:AddToggle("Auto Farm", {
             local tntEvent = ReplicatedStorage.NeedleHaystack.TntAction
             local sellHayEvent = ReplicatedStorage.NeedleHaystack.SellHay
 
+            local firedDrone = false
+
             while _G.AutoFarm and not _G.Unload do 
                 task.wait()
 
+                if plr:GetAttribute("DroneOwned") and not firedDrone then 
+                    ReplicatedStorage.NeedleHaystack.DeployDrone:FireServer()
+                    firedDrone = true
+                end
 
                 local pickableHay = hayStack:GetChildren()
                 local backpackSize = plr:GetAttribute("HayCapacity")
                 local heyGrabCount = plr:GetAttribute("HayGrabCount")
-                local currentAmmount = GetCurrentHayAmount()
+                local currentAmmount = plr:GetAttribute("HayHeld")
 
-                local distanceToHay = (pickableHay[1].Position - root.Position).Magnitude
+                local nearestHay = nil
+                local nearestHayDistance = math.huge
 
-                if distanceToHay > 20 then 
-                    FindPath(pickableHay[math.random(1, #pickableHay)].Position)
+                for _, hay in ipairs(pickableHay) do 
+                    local distance = (hay.Position - root.Position).Magnitude
+
+                    if distance < nearestHayDistance then
+                        nearestHay = hay
+                        nearestHayDistance = distance
+                    end
                 end
+
+                if nearestHayDistance > 5 and nearestHay ~= nil then
+                    FindPath(nearestHay.Position)
+                end
+
+
 
                 for tool, _ in pairs(_G.SelectedTools) do
                     task.wait(0.1)
                     pickableHay = hayStack:GetChildren()
+
                     if tool == "Hand" then 
+
                         local firstIndex = nil
                         local haytable = {}
                         local index = 0
+
                         for i, hay in ipairs(pickableHay) do
                             if index >= heyGrabCount then break end
                             local distance = (hay.Position - root.Position).Magnitude
         
-                            if distance > 20 then continue end
+                            if distance > 5 then continue end
         
                             if #haytable == 0 and not firstIndex then
                                 firstIndex = hay:GetAttribute("HayId")
                             else
                                 table.insert(haytable, hay:GetAttribute("HayId"))
                             end
-                            
+
                             index += 1
                         end
                     
@@ -241,18 +251,21 @@ farmBox:AddToggle("Auto Farm", {
                             firstIndex,
                             haytable
                         )
+
                     elseif tool == "PitchFork" then
+
                         local hayId = nil
                         for i, hay in ipairs(pickableHay) do
                             local distance = (hay.Position - root.Position).Magnitude
         
-                            if distance > 20 then continue end
+                            if distance > 10 then continue end
         
                             hayId = hay:GetAttribute("HayId")
                             break
                         end
                         
                         pitchforkDigEvent:FireServer(hayId)
+
                     elseif tool == "TNT" then
                         
 
@@ -261,8 +274,9 @@ farmBox:AddToggle("Auto Farm", {
                         tntEvent:FireServer(
                             "throw",
                             root.CFrame,
-                            pickableHay[math.random(1, #pickableHay)].Position
+                            nearestHay.Position
                         )
+
                     end
                 end
 
@@ -312,7 +326,7 @@ farmBox:AddToggle("Auto Gems", {
     end
 })
 
-farmBox:AddToggle("NeedleEsp", {
+espBox:AddToggle("NeedleEsp", {
     Text = "Needle esp",
     Default = false,
     Tooltip = "esp for needle",
@@ -332,19 +346,150 @@ farmBox:AddToggle("NeedleEsp", {
                         continue
                     end
         
-        
-                    local highlight = Instance.new("Highlight", item:FindFirstChildWhichIsA("Part"))
+                    local highlight = Instance.new("Highlight", part)
                     highlight.Name = "Esp"
                     highlight.FillColor = Color3.fromRGB(255, 0, 0)
                     highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
                     highlight.FillTransparency = 0.6
                     highlight.OutlineTransparency = 0
                     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+                    local oldLabel = part:FindFirstChild("NameLabel")
+                    if oldLabel then
+                        continue
+                    end
+                    
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Name = "NameLabel"
+                    billboard.Size = UDim2.new(0, 200, 0, 40)
+                    billboard.StudsOffset = Vector3.new(0, 3, 0)
+                    billboard.AlwaysOnTop = true
+                    billboard.Parent = part
+                    
+                    local label = Instance.new("TextLabel")
+                    label.Name = "Label"
+                    label.Size = UDim2.new(1, 0, 1, 0)
+                    label.BackgroundTransparency = 1
+                    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    label.TextStrokeTransparency = 0
+                    label.Font = Enum.Font.GothamBold
+                    label.TextSize = 14
+                    label.Text = "Needle"
+                    label.Parent = billboard
                 end
             end
         end)
     end
 })
+
+espBox:AddToggle("HayEsp", {
+    Text = "Hay esp",
+    Default = false,
+    Tooltip = "esp mutated hay",
+    Callback = function(Value)
+        _G.HayEsp = Value
+        if inLobby then return end
+
+        task.spawn(function()
+
+            while _G.HayEsp and not _G.Unload and task.wait(5) do 
+                local HayClient = workspace.HaystackClient:GetChildren()
+        
+                for _, hay in ipairs(HayClient) do
+                    if hay:GetAttribute("HayMutation") ~= "Normal" and hay:GetAttribute("HayMutation") ~= "Rainbow" then 
+                        local oldLabel = hay:FindFirstChild("MutationLabel")
+                        if oldLabel then
+                            continue
+                        end
+
+                        local oldEsp = hay:FindFirstChild("Esp")
+                        if oldEsp then
+                            continue
+                        end
+
+                        local highlight = Instance.new("Highlight", hay)
+                        highlight.Name = "Esp"
+                        highlight.FillColor = Color3.fromRGB(0, 255, 42)
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                        highlight.FillTransparency = 0.6
+                        highlight.OutlineTransparency = 0
+                        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                        
+                        local billboard = Instance.new("BillboardGui")
+                        billboard.Name = "MutationLabel"
+                        billboard.Size = UDim2.new(0, 200, 0, 40)
+                        billboard.StudsOffset = Vector3.new(0, 3, 0)
+                        billboard.AlwaysOnTop = true
+                        billboard.Parent = hay
+                        
+                        local label = Instance.new("TextLabel")
+                        label.Name = "Label"
+                        label.Size = UDim2.new(1, 0, 1, 0)
+                        label.BackgroundTransparency = 1
+                        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                        label.TextStrokeTransparency = 0
+                        label.Font = Enum.Font.GothamBold
+                        label.TextSize = 14
+                        label.Text = hay:GetAttribute("HayMutation")
+                        label.Parent = billboard
+                    end
+                end
+            end
+        end)
+
+        local HayClient = workspace.HaystackClient:GetChildren()
+                
+        for _, hay in ipairs(HayClient) do
+            local esp = hay:FindFirstChild("Esp")
+            if esp then esp:Destroy() end
+
+            local mutationLabel = hay:FindFirstChild("MutationLabel")
+            if mutationLabel then mutationLabel:Destroy() end
+        end
+    end
+})
+
+farmBox:AddLabel({
+    Text = "Auto needle hand-in only works in Chapter 1 (I'm too lazy to code an actual puzzle solver).",
+    DoesWrap = true
+})
+
+farmBox:AddToggle("AutoNeedleHandIn", {
+    Text = "Auto needle hand in",
+    Default = false,
+    Tooltip = "Automaticaly hand in the needle when found",
+    Callback = function(Value)
+        _G.AutoHandIn = Value
+        if inLobby then return end
+
+        task.spawn(function()
+
+            while _G.AutoHandIn and not _G.Unload and task.wait(5) do 
+                if not _G.NeedleFound then continue end
+
+                local farmer = game.Workspace.NPC:FindFirstChild("Farmer_NPC")
+                if not farmer then continue end
+
+                local farmerRoot = farmer:FindFirstChild("HumanoidRootPart")
+                if not farmerRoot then continue end
+
+                FindPath(farmerRoot.Position)
+
+                ReplicatedStorage.NeedleHaystack.NeedleHandIn:FireServer()
+
+                task.wait(5)
+
+                ReplicatedStorage.NeedleHaystack.ReturnToLobby:FireServer()
+            end
+        end)
+
+        
+    end
+})
+
+
 
 upgradeBox:AddDropdown("SelectedUpgrades", {
     Values = {"Grab", "Speed", "HandHold", "Capacity", "PitchforkCooldown", "PitchforkHold", "Pitchfork", "TntLuck", "TntCooldown", "TntPower", "DroneSpeed", "DroneGrab", "DroneCapacity", "VacuumPower", "VacuumCooling", "VacuumRuntime"},
@@ -587,6 +732,9 @@ scriptBox:AddButton({
         _G.ToggleJoiner = false
         _G.SelectedDifficulty = {}
         _G.PartySize = 1
+        _G.HayEsp = false
+        _G.NeedleFound = false
+        _G.AutoHandIn = false
 
         humanoid.WalkSpeed = 16
         noclipConn = nil
@@ -597,29 +745,14 @@ scriptBox:AddButton({
 })
 
 
+if not inLobby then
+    ReplicatedStorage.NeedleHaystack.NeedleFound.OnClientEvent:Connect(function()
+        _G.NeedleFound = true   
+    end)
+end
+
+
 SaveManager:SetLibrary(Library)
 SaveManager:SetFolder("Luminis/Search For The Needle")
 SaveManager:BuildConfigSection(settingsTab)
 SaveManager:LoadAutoloadConfig()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- This code was generated by Cobalt
--- https://gitlab.com/upio/cobalt
-
-local Event = game:GetService("ReplicatedStorage").NeedleHaystack.NeedleHandIn
-Event:FireServer()
