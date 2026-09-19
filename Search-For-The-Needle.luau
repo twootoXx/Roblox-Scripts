@@ -174,9 +174,8 @@ farmBox:AddToggle("Auto Farm", {
     Callback = function(Value)
         _G.AutoFarm = Value
         if inLobby then return end
-
-
-
+        
+        ReplicatedStorage.NeedleHaystack.IntroCutsceneFinished:FireServer()
 
         task.spawn(function()
                     
